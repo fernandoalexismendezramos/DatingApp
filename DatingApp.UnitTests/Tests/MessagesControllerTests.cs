@@ -2,26 +2,22 @@
 using DatingApp.UnitTests.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Windows.Storage;
 using Xunit;
 
-namespace DatingApp.UnitTests.Test
+namespace DatingApp.UnitTests.Tests
 {
     public class MessagesControllerTests
     {
         private string apiRoute = "api/messages";
         private readonly HttpClient _client;
         private HttpResponseMessage httpResponse;
-        private string requestUrl;
-        private string loginObjetct;
-        private string messageObjetct;
+        private string requestUri;
+        private string registeredObject;
         private HttpContent httpContent;
 
         public MessagesControllerTests()
@@ -30,41 +26,40 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("NoContent", "lisa", "Pa$$w0rd", "bob", "lisa's message for Bob")]
-        public async Task CreateMessage_ShoulNotFound(string statusCode, string username, string password, string recipientUsername, string content)
+        [InlineData("BadRequest", "lois", "Pa$$w0rd", "lois", "Hola")]
+        public async Task CreateMessage_BadRequest(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            requestUrl = $"{apiRoute}";
-            var messageDto = new CreateMessageDto
+            var messageDto = new MessageDto
             {
                 RecipientUsername = recipientUsername,
                 Content = content
             };
 
-            messageObjetct = GetMessageObject(messageDto);
-            httpContent = GetHttpContent(messageObjetct);
+            registeredObject = GetRegisterObject(messageDto);
+            httpContent = GetHttpContent(registeredObject);
+            requestUri = $"{apiRoute}";
 
             // Act
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
+            httpResponse = await _client.PostAsync(requestUri, httpContent);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -72,41 +67,40 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("BadRequest", "lisa", "Pa$$w0rd", "lisa", "lisa's message for lisa")]
-        public async Task CreateMessage_ShouldBadRequest(string statusCode, string username, string password, string recipientUsername, string content)
+        [InlineData("NotFound", "lois", "Pa$$w0rd", "pedritosola", "Hola")]
+        public async Task CreateMessage_NotFound(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            requestUrl = $"{apiRoute}";
-            var messageDto = new CreateMessageDto
+            var messageDto = new MessageDto
             {
                 RecipientUsername = recipientUsername,
                 Content = content
             };
 
-            messageObjetct = GetMessageObject(messageDto);
-            httpContent = GetHttpContent(messageObjetct);
+            registeredObject = GetRegisterObject(messageDto);
+            httpContent = GetHttpContent(registeredObject);
+            requestUri = $"{apiRoute}";
 
             // Act
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
+            httpResponse = await _client.PostAsync(requestUri, httpContent);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -114,41 +108,40 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("OK", "todd", "Pa$$w0rd", "karen", "karen's message for lisa")]
-        public async Task CreateMessage_ShuldOK(string statusCode, string username, string password, string recipientUsername, string content)
+        [InlineData("OK", "lois", "Pa$$w0rd", "lisa", "Hola")]
+        public async Task CreateMessage_OK(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            requestUrl = $"{apiRoute}";
-            var messageDto = new CreateMessageDto
+            var messageDto = new MessageDto
             {
                 RecipientUsername = recipientUsername,
                 Content = content
             };
 
-            messageObjetct = GetMessageObject(messageDto);
-            httpContent = GetHttpContent(messageObjetct);
+            registeredObject = GetRegisterObject(messageDto);
+            httpContent = GetHttpContent(registeredObject);
+            requestUri = $"{apiRoute}";
 
             // Act
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
+            httpResponse = await _client.PostAsync(requestUri, httpContent);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -156,33 +149,31 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("OK", "lisa", "Pa$$w0rd")]
-        public async Task GetMessagesForUser_ShuldOK(string statusCode, string username, string password)
+        [InlineData("OK", "lois", "Pa$$w0rd", "lisa", "Hola")]
+        public async Task GetMessagesForUser_OK(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
-
-            requestUrl = $"{apiRoute}";
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            requestUri = $"{apiRoute}";
 
             // Act
-            httpResponse = await _client.GetAsync(requestUrl);
+            httpResponse = await _client.GetAsync(requestUri);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -190,33 +181,31 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("OK", "lisa", "Pa$$w0rd", "Outbox")]
-        public async Task GetMessagesForUserFromQuery_ShuldOK(string statusCode, string username, string password, string container)
+        [InlineData("OK", "lois", "Pa$$w0rd", "Outbox")]
+        public async Task GetMessagesForUserFromQuery_OK(string statusCode, string username, string password, string container)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
-
-            requestUrl = $"{apiRoute}?container=" + container;
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            requestUri = $"{apiRoute}" + "?container=" + container;
 
             // Act
-            httpResponse = await _client.GetAsync(requestUrl);
+            httpResponse = await _client.GetAsync(requestUri);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -224,33 +213,32 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("OK", "karen", "Pa$$w0rd", "todd")]
-        public async Task GetMessagesThread_ShuldOK(string statusCode, string username, string password, string usernameThread)
+        [InlineData("OK", "lois", "Pa$$w0rd", "lisa")]
+        public async Task GetMessagesThread_OK(string statusCode, string username, string password, string user2)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            requestUrl = $"{apiRoute}/thread/" + usernameThread;
+            requestUri = $"{apiRoute}/thread/" + user2;
 
             // Act
-            httpResponse = await _client.GetAsync(requestUrl);
+            httpResponse = await _client.GetAsync(requestUri);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -258,69 +246,65 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("Unauthorized", "lisa", "Pa$$w0rd", "todd", "lisa's message for todd", "karen")]
-        public async Task DeleteMessage_ShuldUnauthorized(string statusCode, string username, string password, string recipientUsername, string content, string deleteUsername)
+        [InlineData("OK", "lois", "Pa$$w0rd", "lisa", "Hola")]
+        public async Task DeleteMessage_OK(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            requestUrl = $"{apiRoute}";
-            var messageDto = new CreateMessageDto
+            var messageDto = new MessageDto
             {
                 RecipientUsername = recipientUsername,
                 Content = content
             };
 
-            messageObjetct = GetMessageObject(messageDto);
-            httpContent = GetHttpContent(messageObjetct);
+            registeredObject = GetRegisterObject(messageDto);
+            httpContent = GetHttpContent(registeredObject);
+            requestUri = $"{apiRoute}";
+            result = await _client.PostAsync(requestUri, httpContent);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            reponse = await httpResponse.Content.ReadAsStringAsync();
-            var messageDto2 = JsonSerializer.Deserialize<MessageDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var messageJson = await result.Content.ReadAsStringAsync();
+            var message = messageJson.Split(',');
+            var id = message[0].Split("\"")[2].Split(":")[1];
+            requestUri = $"{apiRoute}/" + id;
 
-            requestUrl = "api/account/login";
+            // Act
+            httpResponse = await _client.DeleteAsync(requestUri);
+
             loginDto = new LoginDto
             {
-                Username = deleteUsername,
+                Username = recipientUsername,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
-
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            reponse = await httpResponse.Content.ReadAsStringAsync();
-            userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
-
-            requestUrl = $"{apiRoute}/" + messageDto2.Id;
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
+            result = await _client.PostAsync("api/account/login", httpContent);
+            userJson = await result.Content.ReadAsStringAsync();
+            user = userJson.Split(',');
+            token = user[1].Split("\"")[3];
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
-            httpResponse = await _client.DeleteAsync(requestUrl);
+            httpResponse = await _client.DeleteAsync(requestUri);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
@@ -328,83 +312,96 @@ namespace DatingApp.UnitTests.Test
         }
 
         [Theory]
-        [InlineData("OK", "lisa", "Pa$$w0rd", "todd", "lisa's message for todd")]
-        public async Task DeleteMessage_ShuldOK(string statusCode, string username, string password, string recipientUsername, string content)
+        [InlineData("Unauthorized", "lois", "Pa$$w0rd", "lisa", "Hola", "todd")]
+        public async Task DeleteMessage_Unauthorized(string statusCode, string username, string password, string recipientUsername, string content, string unauth)
         {
             // Arrange
-            requestUrl = "api/account/login";
             var loginDto = new LoginDto
             {
                 Username = username,
                 Password = password
             };
 
-            loginObjetct = GetLoginObject(loginDto);
-            httpContent = GetHttpContent(loginObjetct);
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userDto.Token);
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            requestUrl = $"{apiRoute}";
-            var messageDto = new CreateMessageDto
+            var messageDto = new MessageDto
             {
                 RecipientUsername = recipientUsername,
                 Content = content
             };
 
-            messageObjetct = GetMessageObject(messageDto);
-            httpContent = GetHttpContent(messageObjetct);
+            registeredObject = GetRegisterObject(messageDto);
+            httpContent = GetHttpContent(registeredObject);
+            requestUri = $"{apiRoute}";
+            result = await _client.PostAsync(requestUri, httpContent);
 
-            httpResponse = await _client.PostAsync(requestUrl, httpContent);
-            reponse = await httpResponse.Content.ReadAsStringAsync();
-            var messageDto2 = JsonSerializer.Deserialize<MessageDto>(reponse, new JsonSerializerOptions
+            var messageJson = await result.Content.ReadAsStringAsync();
+            var message = messageJson.Split(',');
+            var id = message[0].Split("\"")[2].Split(":")[1];
+
+            requestUri = $"{apiRoute}/" + id;
+
+            loginDto = new LoginDto
             {
-                PropertyNameCaseInsensitive = true
-            });
+                Username = unauth,
+                Password = password
+            };
 
-            requestUrl = $"{apiRoute}/" + messageDto2.Id;
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
+            result = await _client.PostAsync("api/account/login", httpContent);
+            userJson = await result.Content.ReadAsStringAsync();
+            user = userJson.Split(',');
+            token = user[1].Split("\"")[3];
+
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
-            httpResponse = await _client.DeleteAsync(requestUrl);
+            httpResponse = await _client.DeleteAsync(requestUri);
 
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
+
 
         #region Privated methods
 
-        private static string GetLoginObject(LoginDto loginDto)
+        private static string GetRegisterObject(LoginDto loginDto)
         {
             var entityObject = new JObject()
             {
                 { nameof(loginDto.Username), loginDto.Username },
                 { nameof(loginDto.Password), loginDto.Password }
             };
-
             return entityObject.ToString();
         }
 
-        private static string GetMessageObject(CreateMessageDto createMessageDto)
+        private static string GetRegisterObject(MessageDto message)
         {
             var entityObject = new JObject()
             {
-                { nameof(createMessageDto.RecipientUsername), createMessageDto.RecipientUsername },
-                { nameof(createMessageDto.Content), createMessageDto.Content }
+                { nameof(message.RecipientUsername), message.RecipientUsername },
+                { nameof(message.Content), message.Content }
             };
-
             return entityObject.ToString();
         }
 
-        private static StringContent GetHttpContent(string objectToCode)
+        private StringContent GetHttpContent(string objectToEncode)
         {
-            return new StringContent(objectToCode, Encoding.UTF8, "application/json");
+            return new StringContent(objectToEncode, Encoding.UTF8, "application/json");
         }
 
         #endregion
