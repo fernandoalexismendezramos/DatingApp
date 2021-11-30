@@ -136,7 +136,7 @@ namespace DatingApp.UnitTests.Tests
         }
 
         [Theory]
-        [InlineData("Created", "lisa", "Pa$$w0rd", "img.jpg")]
+        [InlineData("Created", "lisa", "Pa$$w0rd", "image.jpg")]
         public async Task AddPhoto_ShouldNoContent(string statusCode, string username, string password, string file)
         {
             // Arrange

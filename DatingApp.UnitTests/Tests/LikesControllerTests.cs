@@ -2,14 +2,12 @@
 using DatingApp.UnitTests.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Windows.Storage;
 using Xunit;
 
 namespace DatingApp.UnitTests.Test
@@ -45,7 +43,7 @@ namespace DatingApp.UnitTests.Test
 
             httpResponse = await _client.PostAsync(requestUrl, httpContent);
             var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
+            var userDto = System.Text.Json.JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -79,7 +77,7 @@ namespace DatingApp.UnitTests.Test
 
             httpResponse = await _client.PostAsync(requestUrl, httpContent);
             var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
+            var userDto = System.Text.Json.JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -113,7 +111,7 @@ namespace DatingApp.UnitTests.Test
 
             httpResponse = await _client.PostAsync(requestUrl, httpContent);
             var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
+            var userDto = System.Text.Json.JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -147,7 +145,7 @@ namespace DatingApp.UnitTests.Test
 
             httpResponse = await _client.PostAsync(requestUrl, httpContent);
             var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
+            var userDto = System.Text.Json.JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
