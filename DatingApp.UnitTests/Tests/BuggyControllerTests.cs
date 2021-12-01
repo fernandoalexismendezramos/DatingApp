@@ -43,7 +43,7 @@ namespace DatingApp.UnitTests.Test
 
             httpResponse = await _client.PostAsync(requestUrl, httpContent);
             var reponse = await httpResponse.Content.ReadAsStringAsync();
-            var userDto = System.Text.Json.JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
+            var userDto = JsonSerializer.Deserialize<UserDto>(reponse, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
